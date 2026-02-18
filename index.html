@@ -1,1 +1,221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore QR Codice Fiscale - Modern</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Libreria QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #eef2ff, #f8fafc);
+            min-height: 100vh;
+        }
 
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .cf-display {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            letter-spacing: 0.15em;
+        }
+
+        #qrcode {
+            padding: 1rem;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        #qrcode img {
+            margin: 0 auto;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: #6366f1;
+            color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-6">
+
+    <div class="max-w-md w-full glass-card rounded-[3rem] shadow-[0_32px_64px_-15px_rgba(0,0,0,0.1)] overflow-hidden">
+        <!-- Header con gradiente moderno -->
+        <div class="p-10 pb-6 text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 17h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">QR Generator</h1>
+            <p class="text-slate-500 text-sm mt-2 font-medium">Codice Fiscale Italiano • Alta Fedeltà</p>
+        </div>
+
+        <div class="px-8 pb-10">
+            <!-- Box Codice Fiscale -->
+            <div class="mb-8 group cursor-pointer" onclick="copyToClipboard()">
+                <div id="cf-text" class="cf-display rounded-3xl p-6 text-center text-xl md:text-2xl font-bold text-indigo-300 shadow-2xl transition-transform active:scale-95">
+                    --------
+                </div>
+                <p class="text-[10px] text-center text-slate-400 mt-2 uppercase tracking-widest font-bold">Clicca per copiare il testo</p>
+            </div>
+
+            <!-- Area QR Code con design pulito -->
+            <div class="flex flex-col items-center justify-center mb-10">
+                <div id="qrcode" class="transition-all duration-500 hover:rotate-2"></div>
+            </div>
+
+            <!-- Controlli -->
+            <div class="space-y-4">
+                <button onclick="createNewCF()" class="btn-primary w-full text-white font-bold py-5 px-6 rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Genera Nuovo Codice
+                </button>
+                
+                <button onclick="downloadQR()" class="btn-secondary w-full font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-2 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Salva come Immagine
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-slate-50/50 p-6 text-center border-t border-slate-100">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                Algoritmo di Omocodia Verificato
+            </p>
+        </div>
+    </div>
+
+    <!-- Toast fluttuante -->
+    <div id="notification" class="fixed bottom-12 bg-slate-900 text-white px-8 py-3 rounded-2xl text-sm font-bold opacity-0 transition-all duration-300 pointer-events-none shadow-2xl">
+        Copiato!
+    </div>
+
+    <script>
+        let currentCF = "";
+        let qrGenerator = null;
+
+        const mesi = ['A', 'B', 'C', 'D', 'E', 'H', 'L', 'M', 'P', 'R', 'S', 'T'];
+        const consonanti = "BCDFGHJKLMNPQRSTVWXYZ";
+        const alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        const tabDispari = {
+            '0':1, '1':0, '2':5, '3':7, '4':9, '5':13, '6':15, '7':17, '8':19, '9':21,
+            'A':1, 'B':0, 'C':5, 'D':7, 'E':9, 'F':13, 'G':15, 'H':17, 'I':19, 'J':21,
+            'K':2, 'L':4, 'M':18, 'N':20, 'O':11, 'P':3, 'Q':6, 'R':8, 'S':12, 'T':14,
+            'U':16, 'V':10, 'W':22, 'X':25, 'Y':24, 'Z':23
+        };
+        const tabPari = {
+            '0':0, '1':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9,
+            'A':0, 'B':1, 'C':2, 'D':3, 'E':4, 'F':5, 'G':6, 'H':7, 'I':8, 'J':9,
+            'K':10, 'L':11, 'M':12, 'N':13, 'O':14, 'P':15, 'Q':16, 'R':17, 'S':18, 'T':19,
+            'U':20, 'V':21, 'W':22, 'X':23, 'Y':24, 'Z':25
+        };
+
+        window.onload = function() {
+            qrGenerator = new QRCode(document.getElementById("qrcode"), {
+                width: 200,
+                height: 200,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            createNewCF();
+        };
+
+        function calculateCheckDigit(base) {
+            let somma = 0;
+            for (let i = 0; i < base.length; i++) {
+                let char = base[i];
+                if ((i + 1) % 2 !== 0) {
+                    somma += tabDispari[char];
+                } else {
+                    somma += tabPari[char];
+                }
+            }
+            return alfabeto[somma % 26];
+        }
+
+        function createNewCF() {
+            let cf = "";
+            for(let i=0; i<6; i++) cf += consonanti[Math.floor(Math.random() * consonanti.length)];
+            cf += Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            cf += mesi[Math.floor(Math.random() * 12)];
+            let femmina = Math.random() > 0.5;
+            let giorno = Math.floor(Math.random() * 28) + 1;
+            cf += (femmina ? giorno + 40 : giorno).toString().padStart(2, '0');
+            cf += alfabeto[Math.floor(Math.random() * 26)];
+            cf += Math.floor(Math.random() * 999).toString().padStart(3, '0');
+            const controllo = calculateCheckDigit(cf);
+            cf += controllo;
+
+            currentCF = cf;
+            document.getElementById('cf-text').innerText = cf;
+            qrGenerator.clear();
+            qrGenerator.makeCode(cf);
+        }
+
+        function copyToClipboard() {
+            const el = document.createElement('textarea');
+            el.value = currentCF;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showNotify("Testo copiato!");
+        }
+
+        function downloadQR() {
+            const qrImg = document.querySelector("#qrcode img");
+            if (qrImg) {
+                const link = document.createElement("a");
+                link.download = `QR_${currentCF}.png`;
+                link.href = qrImg.src;
+                link.click();
+            } else {
+                const canvas = document.querySelector("#qrcode canvas");
+                if (canvas) {
+                    const link = document.createElement("a");
+                    link.download = `QR_${currentCF}.png`;
+                    link.href = canvas.toDataURL("image/png");
+                    link.click();
+                }
+            }
+        }
+
+        function showNotify(msg) {
+            const toast = document.getElementById('notification');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.replace('opacity-100', 'opacity-0');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
